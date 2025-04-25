@@ -1,13 +1,14 @@
 import './index.css'
+import Navbar from './components/Navbar'
 
 function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-green-100 to-blue-200">
-      <h1 className="text-4xl font-bold text-blue-800">
-        Hello World 👋
-      </h1>
+    <div>
+      <Navbar />
+      <h1 className="text-center mt-10 text-4xl text-blue-700">Hello World 👋</h1>
     </div>
   )
 }
+
 
 export default App
