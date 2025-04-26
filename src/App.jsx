@@ -1,14 +1,16 @@
-import './index.css'
-import Navbar from './components/Navbar'
+// App.jsx
+import React from 'react';
+import Navbar from './components/Navbar'; 
+import Home from './pages/Home';
+import './App.css';
 
 function App() {
   return (
-    <div>
+    <div className="App">
       <Navbar />
-      <h1 className="text-center mt-10 text-4xl text-blue-700">Hello World 👋</h1>
+     <Home></Home>
     </div>
-  )
+  );
 }
 
-
-export default App
+export default App;
