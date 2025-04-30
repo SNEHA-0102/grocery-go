@@ -1,17 +1,43 @@
-// components/Login.jsx
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { ref, update } from 'firebase/database';
+import { db } from '../../firebaseConfig';
+import ForgotPassword from './ForgotPassword'; // <-- Import it
 import './Login.css';
 
-const Login = ({ isOpen, onClose }) => {
-  const [username, setUsername] = useState('');
+const Login = ({ isOpen, onClose, onSwitch }) => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false); // <-- New: control Forgot Password modal
+  const { login } = useAuth();
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login submitted', { username, password, keepLoggedIn });
+
+    try {
+      setError('');
+      setLoading(true);
+      
+      // Login with Firebase Authentication
+      const userCredential = await login(email, password);
+      const user = userCredential.user;
+      
+      // Update user status in Realtime Database
+      await update(ref(db, 'users/' + user.uid), {
+        lastLogin: new Date().toISOString(),
+        isOnline: true
+      });
+      
+      onClose(); // Close modal after successful login
+    } catch (error) {
+      setError('Failed to log in: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleOutsideClick = (e) => {
@@ -20,63 +46,77 @@ const Login = ({ isOpen, onClose }) => {
     }
   };
 
+  const openForgotPassword = (e) => {
+    e.preventDefault();
+    setForgotOpen(true); // <-- Open ForgotPassword modal
+  };
+
   return (
-    <div className="login-modal-overlay" onClick={handleOutsideClick}>
-      <div className="login-modal-container">
-        <div className="login-modal-content">
-          <button className="close-btn" onClick={onClose}>×</button>
-
-          <div className="login-panel">
-            <h2>Login</h2>
-
-            <form onSubmit={handleSubmit}>
-              <div className="input-group">
-                <input 
-                  type="text" 
-                  placeholder="Email"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="input-group">
-                <input 
-                  type="password" 
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="remember-me">
-                <label>
-                  <input 
-                    type="checkbox" 
-                    checked={keepLoggedIn}
-                    onChange={(e) => setKeepLoggedIn(e.target.checked)}
+    <>
+      <div className="login-modal-overlay" onClick={handleOutsideClick}>
+        <div className="login-modal-container">
+          <div className="login-modal-content">
+            <button className="close-btn" onClick={onClose}>×</button>
+            
+            <div className="login-panel">
+              <h2>Login</h2>
+              
+              {error && <div className="error-message">{error}</div>}
+              
+              <form onSubmit={handleSubmit}>
+                <div className="input-group">
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
                   />
-                  <span>Keep me logged in</span>
-                </label>
-                <a href="#" className="forgot-password">Forgot Password?</a>
-              </div>
-
-              <button type="submit" className="login-button">Login</button>
-
-              <p className="signup-prompt">
-                Don't have an account yet? <a href="#">Sign Up</a>
-              </p>
-
-              <p className="terms-text">
-                By continuing, you accept our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
-              </p>
-            </form>
+                </div>
+                
+                <div className="input-group">
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="remember-forgot">
+                  <label>
+                    <input type="checkbox" /> Remember me
+                  </label>
+                  <a href="#" className="forgot-link" onClick={openForgotPassword}>
+                    Forgot Password?
+                  </a>
+                </div>
+                
+                <button
+                  type="submit"
+                  className="login-button"
+                  disabled={loading}
+                >
+                  {loading ? 'Logging In...' : 'Login'}
+                </button>
+                
+                <p className="signup-prompt">
+                  Don't have an account? <button type="button" onClick={onSwitch} className="switch-link">Sign Up</button>
+                </p>
+              </form>
+            </div>
           </div>
-
         </div>
       </div>
-    </div>
+
+      {/* ForgotPassword Modal */}
+      <ForgotPassword 
+        isOpen={forgotOpen}
+        onClose={() => setForgotOpen(false)}
+        initialEmail={email} // prefill email if already typed
+      />
+    </>
   );
 };
 
