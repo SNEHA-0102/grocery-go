@@ -107,7 +107,7 @@ const OffersPage = () => {
       <div className="offers-hero">
         <div className="hero-content">
           <h1>Special Offers</h1>
-          <p>Discover amazing deals and discounts on your favorite products</p>
+          <p>    Discover amazing deals and discounts on your favorite products</p>
         </div>
       </div>
 

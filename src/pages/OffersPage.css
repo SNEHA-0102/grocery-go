@@ -5,10 +5,11 @@
 
 /* Hero section styling - similar to Categories page */
 .offers-hero {
-  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/api/placeholder/1600/400');
+ background: radial-gradient(circle at center, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.85)),
+            url('../images/sale.jpg');
   background-size: cover;
   background-position: center;
-  height: 250px;
+  height: 350px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,18 +18,28 @@
   margin-bottom: 40px;
 }
 
+
+
+@media (max-width: 768px) {
+  .offers-hero {
+    height: 200px;
+  }
+}
+
 .hero-content {
   max-width: 800px;
   padding: 0 20px;
 }
 
 .hero-content h1 {
-  font-size: 2.5rem;
+  padding-left: 100px;
+  font-size: 3rem;
   margin-bottom: 10px;
 }
 
 .hero-content p {
-  font-size: 1.2rem;
+  padding-left: 150px;
+  font-size: 1.5rem;
   opacity: 0.9;
 }
 
