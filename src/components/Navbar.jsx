@@ -1,6 +1,5 @@
-// src/components/Navbar.js
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom'; // ✅ Added useNavigate
+import { Link, useLocation, useNavigate } from 'react-router-dom'; 
 import { useAuth } from '../context/AuthContext';
 import AuthModals from './AuthModals';
 import './Navbar.css';
@@ -11,9 +10,9 @@ const Navbar = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('login');
   const [cartItemCount, setCartItemCount] = useState(0);
-  const { currentUser, logout } = useAuth();
+  const { currentUser, signOut } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate(); // ✅
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const handleScroll = () => {
@@ -64,14 +63,15 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await signOut();
+      navigate('/'); // Redirect to home page after logout
     } catch (error) {
       console.error('Failed to log out', error);
     }
   };
 
   const handleProfileClick = () => {
-    navigate('/profile'); // ✅ Redirect to profile page
+    navigate('/profile');
   };
 
   return (
@@ -104,6 +104,12 @@ const Navbar = () => {
               <li className="nav-item">
                 <Link to="/contact" className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`}>Contact</Link>
               </li>
+              {/* Add Profile link to nav menu when logged in */}
+              {currentUser && (
+                <li className="nav-item">
+                  <Link to="/profile" className={`nav-link ${location.pathname === '/profile' ? 'active' : ''}`}>My Profile</Link>
+                </li>
+              )}
             </ul>
           </nav>
 
@@ -113,7 +119,8 @@ const Navbar = () => {
             {currentUser && (
               <button 
                 className="action-btn profile-btn" 
-                onClick={handleProfileClick} // ✅
+                onClick={handleProfileClick}
+                title="View Profile"
               >
                 <svg className="profile-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -123,7 +130,7 @@ const Navbar = () => {
             )}
 
             {/* Cart button (always visible) */}
-            <Link to="/cart" className="action-btn cart-btn">
+            <Link to="/cart" className="action-btn cart-btn" title="View Cart">
               <svg className="cart-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
                 <circle cx="9" cy="21" r="1"></circle>
                 <circle cx="20" cy="21" r="1"></circle>
@@ -136,8 +143,8 @@ const Navbar = () => {
             <div className="auth-buttons">
               {currentUser ? (
                 <>
-                  <span className="welcome-text">Welcome, {currentUser.email}</span>
-                  <button className="login-btn" onClick={handleLogout}>Logout</button>
+                  <span className="welcome-text">Welcome, {currentUser.displayName || currentUser.email.split('@')[0]}</span>
+                  <button className="login-btn logout-btn" onClick={handleLogout}>Logout</button>
                 </>
               ) : (
                 <>
