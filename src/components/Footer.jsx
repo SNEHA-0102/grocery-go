@@ -33,12 +33,10 @@ const Footer = () => {
 
           {/* Quick Links Column */}
           <div className="footer-column">
-            <h4>Quick Links</h4>
+            <h4>Quick Links</h4> 
             <ul className="footer-links">
               <li><Link to="/">Home</Link></li>
-              <li><Link to="/shop">Shop</Link></li>
-              <li><Link to="/categories">Categories</Link></li>
-              <li><Link to="/offers">Special Offers</Link></li>
+              <li><Link to="/categories">Shop</Link></li>
               <li><Link to="/about">About Us</Link></li>
               <li><Link to="/contact">Contact Us</Link></li>
             </ul>

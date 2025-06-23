@@ -1,12 +1,12 @@
 import { useParams, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { ref, get } from 'firebase/database';
+import { ref, get, set, remove, onValue, off } from 'firebase/database';
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../context/AuthContext';
 import Login from './Login';
 import './ProductDetails.css';
 
-// ✅ Format product name into image filename
+// Format product name into image filename
 const formatFileName = (name) =>
   name.toLowerCase().replace(/\s+/g, '_').replace(/[^\w_]/g, '') + '.jpg';
 
@@ -21,9 +21,39 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [addedToWishlist, setAddedToWishlist] = useState(false);
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
 
   const { currentUser } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Check if item is already in wishlist (Firebase)
+  useEffect(() => {
+    let wishlistItemRef = null;
+    let unsubscribe = null;
+
+    if (currentUser && id) {
+      wishlistItemRef = ref(db, `wishlists/${currentUser.uid}/${id}`);
+      
+      unsubscribe = onValue(wishlistItemRef, (snapshot) => {
+        setIsInWishlist(snapshot.exists());
+      }, (error) => {
+        console.error('Error checking wishlist status:', error);
+      });
+    } else {
+      setIsInWishlist(false);
+    }
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+      if (wishlistItemRef) {
+        off(wishlistItemRef);
+      }
+    };
+  }, [currentUser, id]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -70,6 +100,16 @@ const ProductDetails = () => {
     }
     return () => clearTimeout(timeout);
   }, [addedToCart]);
+
+  useEffect(() => {
+    let timeout;
+    if (addedToWishlist) {
+      timeout = setTimeout(() => {
+        setAddedToWishlist(false);
+      }, 3000);
+    }
+    return () => clearTimeout(timeout);
+  }, [addedToWishlist]);
 
   const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value);
@@ -120,6 +160,59 @@ const ProductDetails = () => {
     setQuantity(1);
   };
 
+  const addToWishlist = async () => {
+    if (!currentUser) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    setWishlistLoading(true);
+
+    try {
+      const wishlistItemRef = ref(db, `wishlists/${currentUser.uid}/${id}`);
+
+      if (isInWishlist) {
+        // Remove from wishlist
+        await remove(wishlistItemRef);
+        showNotification('Removed from wishlist');
+      } else {
+        // Add to wishlist
+        const wishlistItem = {
+          name: product.Product_Name,
+          price: product.Unit_Price,
+          image: `/images/products/${formatFileName(product.Product_Name)}`,
+          category,
+          subcategory: subcategory || null,
+          stock: product.Stock_Quantity,
+          brand: product.Brand,
+          addedAt: new Date().toISOString()
+        };
+
+        await set(wishlistItemRef, wishlistItem);
+        setAddedToWishlist(true);
+        showNotification('Added to wishlist!');
+      }
+    } catch (error) {
+      console.error('Error updating wishlist:', error);
+      showNotification('Failed to update wishlist', 'error');
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
+  const showNotification = (message, type = 'success') => {
+    const notification = document.createElement('div');
+    notification.className = `product-notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      if (document.body.contains(notification)) {
+        document.body.removeChild(notification);
+      }
+    }, 3000);
+  };
+
   if (loading) return <p className="loading-message">Loading product details...</p>;
   if (!product) return <p className="error-message">Product not found.</p>;
 
@@ -164,15 +257,32 @@ const ProductDetails = () => {
             <button 
               className={`add-to-cart-btn ${addedToCart ? 'added' : ''}`} 
               onClick={addToCart}
+              disabled={product.Stock_Quantity <= 0}
             >
-              {addedToCart ? 'Added ✓' : 'Add to Cart 🛒'}
+              {product.Stock_Quantity <= 0 ? 'Out of Stock' : (addedToCart ? 'Added ✓' : 'Add to Cart 🛒')}
             </button>
-            <button className="add-to-wishlist-btn">Add to Wishlist ❤️</button>
+            
+            <button 
+              className={`add-to-wishlist-btn ${isInWishlist ? 'in-wishlist' : ''} ${addedToWishlist ? 'added' : ''}`}
+              onClick={addToWishlist}
+              disabled={wishlistLoading}
+            >
+              {wishlistLoading ? 'Loading...' : (
+                isInWishlist ? 'Remove from Wishlist 💔' : 
+                (addedToWishlist ? 'Added to Wishlist ✓' : 'Add to Wishlist ❤️')
+              )}
+            </button>
           </div>
 
           {addedToCart && (
             <div className="cart-success-message">
               {quantity} {quantity > 1 ? 'items' : 'item'} added to cart!
+            </div>
+          )}
+
+          {addedToWishlist && (
+            <div className="wishlist-success-message">
+              Item added to wishlist!
             </div>
           )}
         </div>

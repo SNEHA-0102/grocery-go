@@ -1,6 +1,8 @@
 // src/components/Navbar.js
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom'; // ✅ Added useNavigate
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { ref, onValue, off } from 'firebase/database';
+import { db } from '../../firebaseConfig';
 import { useAuth } from '../context/AuthContext';
 import AuthModals from './AuthModals';
 import './Navbar.css';
@@ -11,9 +13,10 @@ const Navbar = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('login');
   const [cartItemCount, setCartItemCount] = useState(0);
+  const [wishlistItemCount, setWishlistItemCount] = useState(0);
   const { currentUser, logout } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate(); // ✅
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,6 +26,7 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Cart count effect (remains localStorage-based)
   useEffect(() => {
     const updateCartCount = () => {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -37,6 +41,54 @@ const Navbar = () => {
       window.removeEventListener('cartUpdated', updateCartCount);
     };
   }, []);
+
+  // Enhanced Wishlist count effect (Firebase-based with custom event listener)
+  useEffect(() => {
+    let wishlistRef = null;
+    let unsubscribeFirebase = null;
+
+    const updateWishlistCount = () => {
+      if (currentUser) {
+        wishlistRef = ref(db, `wishlists/${currentUser.uid}`);
+        
+        unsubscribeFirebase = onValue(wishlistRef, (snapshot) => {
+          if (snapshot.exists()) {
+            const wishlistData = snapshot.val();
+            const itemCount = Object.keys(wishlistData).length;
+            setWishlistItemCount(itemCount);
+          } else {
+            setWishlistItemCount(0);
+          }
+        }, (error) => {
+          console.error('Error fetching wishlist count:', error);
+          setWishlistItemCount(0);
+        });
+      } else {
+        setWishlistItemCount(0);
+      }
+    };
+
+    // Custom event listener for wishlist updates
+    const handleWishlistUpdate = () => {
+      updateWishlistCount();
+    };
+
+    updateWishlistCount();
+    
+    // Add event listener for wishlist updates
+    window.addEventListener('wishlistUpdated', handleWishlistUpdate);
+
+    // Cleanup function
+    return () => {
+      if (unsubscribeFirebase) {
+        unsubscribeFirebase();
+      }
+      if (wishlistRef) {
+        off(wishlistRef);
+      }
+      window.removeEventListener('wishlistUpdated', handleWishlistUpdate);
+    };
+  }, [currentUser]);
 
   useEffect(() => {
     setIsMenuOpen(false); // Close mobile menu on route change
@@ -71,7 +123,7 @@ const Navbar = () => {
   };
 
   const handleProfileClick = () => {
-    navigate('/profile'); // ✅ Redirect to profile page
+    navigate('/profile');
   };
 
   return (
@@ -99,12 +151,16 @@ const Navbar = () => {
                 <Link to="/categories" className={`nav-link ${location.pathname === '/categories' ? 'active' : ''}`}>Categories</Link>
               </li>
               <li className="nav-item">
-                <Link to="/offers" className={`nav-link ${location.pathname === '/offers' ? 'active' : ''}`}>Offers</Link>
-              </li>
-              <li className="nav-item">
                 <Link to="/contact" className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`}>Contact</Link>
               </li>
             </ul>
+            {currentUser && (
+              <div className="mobile-welcome-text">
+                Welcome, {currentUser.email.length > 20 
+                  ? `${currentUser.email.substring(0, 17)}...` 
+                  : currentUser.email}
+              </div>
+            )}
           </nav>
 
           {/* Navbar Actions */}
@@ -113,7 +169,8 @@ const Navbar = () => {
             {currentUser && (
               <button 
                 className="action-btn profile-btn" 
-                onClick={handleProfileClick} // ✅
+                onClick={handleProfileClick}
+                title="Profile"
               >
                 <svg className="profile-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -122,8 +179,20 @@ const Navbar = () => {
               </button>
             )}
 
+            {/* Wishlist button (visible only if logged in) */}
+            {currentUser && (
+              <Link to="/wishlist" className="action-btn wishlist-btn" title="Wishlist">
+                <svg className="wishlist-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+                {wishlistItemCount > 0 && (
+                  <span className="wishlist-count">{wishlistItemCount}</span>
+                )}
+              </Link>
+            )}
+
             {/* Cart button (always visible) */}
-            <Link to="/cart" className="action-btn cart-btn">
+            <Link to="/cart" className="action-btn cart-btn" title="Cart">
               <svg className="cart-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
                 <circle cx="9" cy="21" r="1"></circle>
                 <circle cx="20" cy="21" r="1"></circle>
@@ -136,7 +205,11 @@ const Navbar = () => {
             <div className="auth-buttons">
               {currentUser ? (
                 <>
-                  <span className="welcome-text">Welcome, {currentUser.email}</span>
+                  <span className="welcome-text" title={currentUser.email}>
+                    Welcome, {currentUser.email.length > 15 
+                      ? `${currentUser.email.substring(0, 12)}...` 
+                      : currentUser.email}
+                  </span>
                   <button className="login-btn" onClick={handleLogout}>Logout</button>
                 </>
               ) : (

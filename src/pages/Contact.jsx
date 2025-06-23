@@ -10,7 +10,6 @@ const Contact = () => {
     message: ''
   });
   const [formStatus, setFormStatus] = useState(null);
-  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevState => ({
@@ -18,29 +17,24 @@ const Contact = () => {
       [name]: value
     }));
   };
-  
   const handleSubmit = (e) => {
     e.preventDefault();
     // Here you would normally handle the form submission to your backend
     console.log('Form submitted:', formData);
-    
     // Simulate success response
     setFormStatus('success');
-    
     // Reset form after submission
     setFormData({
       name: '',
       email: '',
       subject: '',
       message: ''
-    });
-    
+    });   
     // Clear success message after a few seconds
     setTimeout(() => {
       setFormStatus(null);
     }, 5000);
   };
-
   return (
     <div className="contact-page">
       <div className="contact-header">
@@ -48,14 +42,12 @@ const Contact = () => {
           <h1>Contact Us</h1>
           <p>We'd love to hear from you! Reach out to us with any questions or feedback.</p>
         </div>
-      </div>
-      
+      </div>  
       <div className="contact-container">
         <div className="contact-info-section">
           <div className="contact-info-card">
             <h2>Get In Touch</h2>
-            <p>Have questions about our products or services? Our team is here to help you!</p>
-            
+            <p>Have questions about our products or services? Our team is here to help you!</p>  
             <div className="contact-info-item">
               <FaPhone className="contact-icon" />
               <div>
@@ -64,7 +56,6 @@ const Contact = () => {
                 <p>+91 9876543211</p>
               </div>
             </div>
-            
             <div className="contact-info-item">
               <FaEnvelope className="contact-icon" />
               <div>

@@ -14,6 +14,11 @@ import slide2 from '../images/slide2.png';
 import slide3 from '../images/1.png';
 import slide4 from '../images/2.png';
 
+import testimonialImg1 from '../images/testimonalImg.jpg';
+import testimonialImg2 from '../images/testimonalImg2.jpg';
+import testimonialImg3 from '../images/testimonalImg3.jpg';
+
+
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -126,6 +131,131 @@ const Home = () => {
             <h2>Welcome to Our Grocery Store</h2>
             <p>We provide fresh, high-quality groceries directly to your doorstep. Explore a wide variety of products!</p>
             <Link to="/categories" className="btn btn-success">Shop Now</Link>
+          </div>
+        </div>
+      </section>
+      {/* About Us Section */}
+      <section className="about-us-section py-5">
+        <div className="container">
+          <div className="row align-items-center">
+            <div className="col-md-6">
+              <div className="about-content">
+                <h2 className="section-title mb-4">About Us</h2>
+                <p className="about-description">
+                  We are a family-owned grocery store committed to bringing you the freshest and highest quality products. 
+                  With over 15 years of experience in the industry, we understand what our customers need and strive to 
+                  exceed their expectations every day.
+                </p>
+                <p className="about-description">
+                  Our mission is to make grocery shopping convenient, affordable, and enjoyable. We source our products 
+                  from trusted suppliers and local farmers to ensure you get the best value for your money.
+                </p>
+                <div className="about-stats">
+                  <div className="stat-item">
+                    <h4>15+</h4>
+                    <span>Years of Experience</span>
+                  </div>
+                  <div className="stat-item">
+                    <h4>10,000+</h4>
+                    <span>Happy Customers</span>
+                  </div>
+                  <div className="stat-item">
+                    <h4>500+</h4>
+                    <span>Products Available</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="about-image">
+                <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" 
+                     alt="About Us" className="img-fluid rounded" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="testimonials-section py-5 bg-light">
+        <div className="container">
+          <h2 className="section-title text-center mb-5">What Our Customers Say</h2>
+          <div className="row">
+            <div className="col-md-4 mb-4">
+              <div className="testimonial-card">
+                <div className="testimonial-content">
+                  <div className="stars mb-3">
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                  </div>
+                  <p className="testimonial-text">
+                    "Amazing quality products and super fast delivery! I've been ordering from them for months 
+                    and they never disappoint. Highly recommended!"
+                  </p>
+                  <div className="customer-info">
+                  <img src={testimonialImg1} alt="Customer" className="customer-avatar" />
+
+                    <div className="customer-details">
+                      <h5 className="customer-name">Sarah Johnson</h5>
+                      <span className="customer-location">Mumbai, Maharashtra</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="col-md-4 mb-4">
+              <div className="testimonial-card">
+                <div className="testimonial-content">
+                  <div className="stars mb-3">
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                  </div>
+                  <p className="testimonial-text">
+                    "Fresh vegetables and fruits every time! The packaging is excellent and prices are very reasonable. 
+                    This is now my go-to grocery store."
+                  </p>
+                  <div className="customer-info">
+                  <img src={testimonialImg2} alt="Customer" className="customer-avatar" />
+                    <div className="customer-details">
+                      <h5 className="customer-name">Rajesh Patel</h5>
+                      <span className="customer-location">Pune, Maharashtra</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="col-md-4 mb-4">
+              <div className="testimonial-card">
+                <div className="testimonial-content">
+                  <div className="stars mb-3">
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                  </div>
+                  <p className="testimonial-text">
+                    "Excellent customer service and wide variety of products. The online ordering system is 
+                    user-friendly and the delivery is always on time."
+                  </p>
+                  <div className="customer-info">
+                    <img src={testimonialImg3} alt="Customer" className="customer-avatar" />
+                    <div className="customer-details">
+                      <h5 className="customer-name">Priya Sharma</h5>
+                      <span className="customer-location">Navi Mumbai, Maharashtra</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

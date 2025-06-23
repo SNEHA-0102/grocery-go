@@ -11,7 +11,7 @@ import fruitsVegetables from "../assets/categories/fruits_vegetables.jpg";
 import grainsPulses from "../assets/categories/grains_pulses.jpg";
 import oilsFats from "../assets/categories/oils_fats.jpg";
 import seafood from "../assets/categories/seafood.jpg";
-import defaultImage from "../assets/offers/default_offer.jpg";
+
 
 import './Categories.css';
 
