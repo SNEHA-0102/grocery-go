@@ -1,10 +1,43 @@
 // src/pages/Profile.jsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import './Profile.css';
+import { db } from '../../firebaseConfig'; // Ensure this exports your Realtime DB
+import { ref, onValue, remove } from 'firebase/database';
 
 const Profile = () => {
   const { currentUser, userProfile } = useAuth();
+  const [userReviews, setUserReviews] = useState([]);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const reviewsRef = ref(db, 'reviews/');
+    onValue(reviewsRef, (snapshot) => {
+      const data = snapshot.val();
+      const reviewsArray = [];
+
+      for (let key in data) {
+        if (data[key].userId === currentUser.uid) {
+          reviewsArray.push({ id: key, ...data[key] });
+        }
+      }
+
+      setUserReviews(reviewsArray);
+    });
+  }, [currentUser]);
+
+  const handleDelete = (reviewId) => {
+    if (window.confirm("Are you sure you want to delete this review?")) {
+      remove(ref(db, `reviews/${reviewId}`))
+        .then(() => {
+          setUserReviews((prev) => prev.filter((r) => r.id !== reviewId));
+        })
+        .catch((error) => {
+          console.error("Error deleting review:", error);
+        });
+    }
+  };
 
   if (!currentUser) {
     return (
@@ -47,6 +80,27 @@ const Profile = () => {
             </span>
           </div>
         </div>
+      </div>
+
+      {/* Reviews Section */}
+      <div className="user-reviews">
+        <h3>Your Reviews</h3>
+        {userReviews.length === 0 ? (
+          <p>No reviews found.</p>
+        ) : (
+          <ul className="review-list">
+            {userReviews.map((review) => (
+              <li key={review.id} className="review-item">
+                <p><strong>Rating:</strong> ⭐ {review.rating}</p>
+                <p><strong>Review:</strong> {review.content}</p>
+                <p className="timestamp">{new Date(review.timestamp).toLocaleString()}</p>
+                <button onClick={() => handleDelete(review.id)} className="delete-btn">
+                  Delete ❌
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

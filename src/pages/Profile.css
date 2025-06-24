@@ -1,76 +1,209 @@
+/* Profile.css - Clean and Simple Styling */
+
 .profile-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  background-color: #f8f9fa;
   min-height: 100vh;
-  background: #f4f4f4;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .profile-card {
-  background: #fff;
-  padding: 2rem;
+  background: white;
   border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
-  width: 100%;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
 }
 
 .profile-header {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #f1f3f4;
 }
 
 .profile-header h2 {
-  margin-bottom: 0.25rem;
-  font-size: 1.8rem;
-  color: #333;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 0.5rem;
 }
 
 .profile-header .email {
-  color: #888;
-  font-size: 0.95rem;
+  font-size: 1rem;
+  color: #6c757d;
+  margin: 0;
 }
 
 .profile-details {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1rem;
 }
 
 .detail {
   display: flex;
   justify-content: space-between;
-  padding: 0.75rem 1rem;
+  align-items: center;
+  padding: 1rem;
+  background: #f8f9fa;
   border-radius: 8px;
-  background: #fafafa;
-  border: 1px solid #ddd;
+  border-left: 4px solid #007bff;
 }
 
-.label {
+.detail .label {
   font-weight: 600;
-  color: #444;
+  color: #495057;
 }
 
-.value {
+.detail .value {
   font-weight: 500;
-  color: #222;
+  color: #212529;
 }
 
-.online {
-  color: green;
+.value.online {
+  color: #28a745;
+  font-weight: 600;
 }
 
-.offline {
-  color: red;
+.value.offline {
+  color: #dc3545;
+  font-weight: 600;
 }
 
-@media (max-width: 500px) {
-  .profile-card {
-    padding: 1.2rem;
+/* Reviews Section */
+.user-reviews {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+}
+
+.user-reviews h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 1.5rem;
+  text-align: center;
+}
+
+.user-reviews > p {
+  text-align: center;
+  color: #6c757d;
+  font-size: 1rem;
+  margin: 2rem 0;
+}
+
+.review-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.review-item {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid #007bff;
+  transition: box-shadow 0.2s ease;
+}
+
+.review-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.review-item p {
+  margin: 0 0 0.75rem;
+  line-height: 1.5;
+}
+
+.review-item p strong {
+  color: #495057;
+  font-weight: 600;
+}
+
+.review-item p:not(.timestamp) {
+  color: #212529;
+}
+
+.timestamp {
+  color: #6c757d !important;
+  font-size: 0.9rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.delete-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.delete-btn:hover {
+  background: #c82333;
+}
+
+.delete-btn:focus {
+  outline: 2px solid #dc3545;
+  outline-offset: 2px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profile-page {
+    padding: 1rem 0.5rem;
   }
+  
+  .profile-card,
+  .user-reviews {
+    padding: 1.5rem;
+  }
+  
+  .profile-header h2 {
+    font-size: 1.75rem;
+  }
+  
+  .profile-details {
+    grid-template-columns: 1fr;
+  }
+  
+  .detail {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
 
+@media (max-width: 480px) {
+  .profile-page {
+    padding: 1rem 0.25rem;
+  }
+  
+  .profile-card,
+  .user-reviews {
+    padding: 1rem;
+  }
+  
   .profile-header h2 {
     font-size: 1.5rem;
+  }
+  
+  .review-item {
+    padding: 1rem;
+  }
+  
+  .delete-btn {
+    width: 100%;
+    margin-top: 0.5rem;
   }
 }

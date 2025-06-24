@@ -17,7 +17,7 @@ import slide4 from '../images/2.png';
 import testimonialImg1 from '../images/testimonalImg.jpg';
 import testimonialImg2 from '../images/testimonalImg2.jpg';
 import testimonialImg3 from '../images/testimonalImg3.jpg';
-
+import aboutUs from '../images/aboutUs.jpg';
 
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -168,8 +168,7 @@ const Home = () => {
             </div>
             <div className="col-md-6">
               <div className="about-image">
-                <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" 
-                     alt="About Us" className="img-fluid rounded" />
+               <img src={aboutUs} alt="Customer" className="aboutUs" />
               </div>
             </div>
           </div>

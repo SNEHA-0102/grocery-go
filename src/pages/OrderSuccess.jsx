@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { ref, push, set } from 'firebase/database';
+import { db } from '../../firebaseConfig'; // Adjust path as needed
+import { useAuth } from '../context/AuthContext'; // Adjust path as needed
 
 const OrderSuccess = () => {
     const [orderId, setOrderId] = useState('');
@@ -13,6 +16,8 @@ const OrderSuccess = () => {
     });
     const [error, setError] = useState('');
     const [submitted, setSubmitted] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const { currentUser } = useAuth();
 
     useEffect(() => {
         const id = `GG${Date.now().toString().slice(-8)}`;
@@ -51,16 +56,95 @@ const OrderSuccess = () => {
         }
     };
 
+    const showNotification = (message, type = 'success') => {
+        const notification = document.createElement('div');
+        notification.className = `review-notification ${type}`;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'success' ? '#4CAF50' : '#f44336'};
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+        `;
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+            if (document.head.contains(style)) {
+                document.head.removeChild(style);
+            }
+        }, 3000);
+    };
+
     const handleReviewSubmit = async () => {
         if (!review.name.trim()) return setError('Please enter your name');
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(review.email)) return setError('Invalid email');
         if (userRating === 0) return setError('Please select a rating');
+        
         setError('');
+        setSubmitting(true);
 
-        // Simulate API call
-        setTimeout(() => {
+        try {
+            const reviewData = {
+                orderId: orderId,
+                userId: currentUser?.uid || null,
+                userName: review.name.trim(),
+                userEmail: review.email.trim(),
+                rating: userRating,
+                reviewText: review.text.trim(),
+                submittedAt: new Date().toISOString(),
+                deliveryTime: deliveryTime,
+                verified: currentUser ? true : false // Mark as verified if user is logged in
+            };
+
+            // Save to Firebase Realtime Database
+            const reviewsRef = ref(db, 'reviews');
+            const newReviewRef = push(reviewsRef);
+            await set(newReviewRef, reviewData);
+
+            // Also save under user's reviews if logged in
+            if (currentUser) {
+                const userReviewsRef = ref(db, `userReviews/${currentUser.uid}`);
+                const userReviewRef = push(userReviewsRef);
+                await set(userReviewRef, {
+                    ...reviewData,
+                    reviewId: newReviewRef.key
+                });
+            }
+
             setSubmitted(true);
-        }, 500);
+            showNotification('Thank you for your review! It has been saved successfully.');
+            
+            // Clear form data
+            setReview({ name: '', email: '', text: '' });
+            setUserRating(0);
+            
+        } catch (error) {
+            console.error('Error saving review:', error);
+            setError('Failed to submit review. Please try again.');
+            showNotification('Failed to submit review. Please try again.', 'error');
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const StarRating = ({ rating, onRatingChange, onHover, hoverValue }) => {
@@ -77,6 +161,7 @@ const OrderSuccess = () => {
                             onMouseEnter={() => onHover(star)}
                             onMouseLeave={() => onHover(0)}
                             aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+                            disabled={submitting}
                         >
                             <svg width="32" height="32" viewBox="0 0 24 24" className="star-svg">
                                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
@@ -307,10 +392,29 @@ const OrderSuccess = () => {
                                 color: '#fff',
                                 fontSize: '1.5rem',
                                 fontWeight: '600',
-                                marginBottom: '2rem'
+                                marginBottom: '1rem'
                             }}>
                                 How was your experience?
                             </h3>
+                            
+                            {currentUser && (
+                                <div style={{
+                                    background: '#444',
+                                    border: '1px solid #555',
+                                    borderRadius: '8px',
+                                    padding: '0.75rem',
+                                    marginBottom: '1.5rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.5rem'
+                                }}>
+                                    <span style={{ color: '#4CAF50', fontSize: '1.2rem' }}>✓</span>
+                                    <span style={{ color: '#ccc', fontSize: '0.9rem' }}>
+                                        Logged in as verified user
+                                    </span>
+                                </div>
+                            )}
                             
                             <div style={{
                                 marginBottom: '1.5rem',
@@ -323,14 +427,16 @@ const OrderSuccess = () => {
                                     placeholder="Your Name"
                                     value={review.name}
                                     onChange={e => setReview({ ...review, name: e.target.value })}
+                                    disabled={submitting}
                                     style={{
                                         width: '100%',
                                         padding: '0.75rem',
                                         border: '1px solid #444',
                                         borderRadius: '8px',
-                                        background: '#222',
+                                        background: submitting ? '#111' : '#222',
                                         color: '#fff',
-                                        fontSize: '1rem'
+                                        fontSize: '1rem',
+                                        opacity: submitting ? 0.6 : 1
                                     }}
                                 />
                                 <input
@@ -338,14 +444,16 @@ const OrderSuccess = () => {
                                     placeholder="Your Email"
                                     value={review.email}
                                     onChange={e => setReview({ ...review, email: e.target.value })}
+                                    disabled={submitting}
                                     style={{
                                         width: '100%',
                                         padding: '0.75rem',
                                         border: '1px solid #444',
                                         borderRadius: '8px',
-                                        background: '#222',
+                                        background: submitting ? '#111' : '#222',
                                         color: '#fff',
-                                        fontSize: '1rem'
+                                        fontSize: '1rem',
+                                        opacity: submitting ? 0.6 : 1
                                     }}
                                 />
                             </div>
@@ -361,43 +469,66 @@ const OrderSuccess = () => {
                                 placeholder="Share your feedback (optional)"
                                 value={review.text}
                                 onChange={e => setReview({ ...review, text: e.target.value })}
+                                disabled={submitting}
                                 style={{
                                     width: '100%',
                                     minHeight: '80px',
                                     padding: '1rem',
                                     border: '1px solid #444',
                                     borderRadius: '8px',
-                                    background: '#222',
+                                    background: submitting ? '#111' : '#222',
                                     color: '#fff',
                                     fontSize: '1rem',
                                     resize: 'vertical',
                                     marginBottom: '1rem',
-                                    marginTop: '1rem'
+                                    marginTop: '1rem',
+                                    opacity: submitting ? 0.6 : 1
                                 }}
                             />
 
                             <button
                                 onClick={handleReviewSubmit}
+                                disabled={submitting}
                                 style={{
-                                    background: '#ff8800',
+                                    background: submitting ? '#666' : '#ff8800',
                                     color: '#fff',
                                     border: 'none',
                                     padding: '0.75rem 2rem',
                                     borderRadius: '8px',
                                     fontSize: '1rem',
                                     fontWeight: '600',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.3s ease'
+                                    cursor: submitting ? 'not-allowed' : 'pointer',
+                                    transition: 'all 0.3s ease',
+                                    opacity: submitting ? 0.7 : 1,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.5rem',
+                                    margin: '0 auto'
                                 }}
                             >
-                                Submit Review
+                                {submitting && (
+                                    <div style={{
+                                        width: '16px',
+                                        height: '16px',
+                                        border: '2px solid #fff',
+                                        borderTop: '2px solid transparent',
+                                        borderRadius: '50%',
+                                        animation: 'spin 1s linear infinite'
+                                    }}></div>
+                                )}
+                                {submitting ? 'Submitting...' : 'Submit Review'}
                             </button>
                             
                             {error && (
                                 <div style={{
                                     color: '#ff6b6b',
                                     fontSize: '0.875rem',
-                                    marginTop: '0.5rem'
+                                    marginTop: '0.5rem',
+                                    background: 'rgba(255, 107, 107, 0.1)',
+                                    padding: '0.5rem',
+                                    borderRadius: '4px',
+                                    border: '1px solid rgba(255, 107, 107, 0.3)'
                                 }}>
                                     {error}
                                 </div>
@@ -420,8 +551,18 @@ const OrderSuccess = () => {
                             }}>
                                 Thank you for your feedback!
                             </p>
-                            <p style={{ color: '#ccc', fontSize: '1rem' }}>
-                                Your review helps us improve our service.
+                            <p style={{ color: '#ccc', fontSize: '1rem', marginBottom: '1rem' }}>
+                                Your review has been saved and helps us improve our service.
+                            </p>
+                            <p style={{ 
+                                color: '#999',
+                                fontSize: '0.875rem',
+                                background: '#222',
+                                padding: '0.5rem',
+                                borderRadius: '4px',
+                                border: '1px solid #444'
+                            }}>
+                                Review ID: {orderId}-review
                             </p>
                         </div>
                     )}
@@ -451,6 +592,11 @@ const OrderSuccess = () => {
                     }
                 }
 
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+
                 .rating-container {
                     margin: 1.5rem 0;
                 }
@@ -478,9 +624,14 @@ const OrderSuccess = () => {
                     border-radius: 50%;
                 }
 
-                .star-button:hover {
+                .star-button:not(:disabled):hover {
                     transform: scale(1.1);
                     background: rgba(255, 136, 0, 0.1);
+                }
+
+                .star-button:disabled {
+                    cursor: not-allowed;
+                    opacity: 0.6;
                 }
 
                 .star-button:focus {
@@ -505,7 +656,7 @@ const OrderSuccess = () => {
                     stroke-width: 2;
                 }
 
-                .star-button.empty:hover .star-svg {
+                .star-button.empty:not(:disabled):hover .star-svg {
                     stroke: #ff8800;
                     fill: rgba(255, 136, 0, 0.2);
                 }
