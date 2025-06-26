@@ -441,7 +441,7 @@ const OrderSuccess = () => {
                         <span style={{ marginRight: '0.5rem', fontSize: '1.25rem' }}>🏠</span>
                         Continue Shopping
                     </button>
-                    <button style={{
+                    {/* <button style={{
                         display: 'flex',
                         alignItems: 'center',
                         padding: '1rem 2rem',
@@ -457,7 +457,7 @@ const OrderSuccess = () => {
                     }}>
                         <span style={{ marginRight: '0.5rem', fontSize: '1.25rem' }}>📦</span>
                         View Orders
-                    </button>
+                    </button> */}
                 </div>
 
                 <div style={{
