@@ -17,9 +17,11 @@ const OrderSuccess = () => {
     const [error, setError] = useState('');
     const [submitted, setSubmitted] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [orderSaved, setOrderSaved] = useState(false); // Add this state to track if order is already saved
     const { currentUser } = useAuth();
 
     useEffect(() => {
+        // Generate order ID only once
         const id = `GG${Date.now().toString().slice(-8)}`;
         setOrderId(id);
 
@@ -39,7 +41,60 @@ const OrderSuccess = () => {
                 return prev;
             });
         }, 2000);
-    }, []);
+
+        return () => clearInterval(interval);
+    }, []); // Remove currentUser dependency
+
+    // Separate useEffect for saving order when both orderId and currentUser are available
+    useEffect(() => {
+        if (orderId && currentUser && !orderSaved) {
+            saveOrderToUserOrders();
+        }
+    }, [orderId, currentUser, orderSaved]);
+
+    const saveOrderToUserOrders = async () => {
+        if (!currentUser || !orderId || orderSaved) {
+            console.log('Cannot save order - missing data or already saved');
+            return;
+        }
+
+        try {
+            setOrderSaved(true); // Set this immediately to prevent duplicate calls
+
+            const orderData = {
+                orderId: orderId,
+                status: 'confirmed',
+                placedAt: new Date().toISOString(),
+                estimatedDelivery: deliveryTime,
+                userId: currentUser.uid,
+                userEmail: currentUser.email,
+                // Add other order details here like items, total amount, etc.
+                orderDetails: {
+                    // You can pass order details from props or context
+                    // items: orderItems,
+                    // totalAmount: totalAmount,
+                    // deliveryAddress: deliveryAddress,
+                },
+                currentStep: 0 // Order confirmed
+            };
+
+            // Save under users/{userId}/orders/{orderId}
+            const userOrderRef = ref(db, `users/${currentUser.uid}/orders/${orderId}`);
+            await set(userOrderRef, orderData);
+
+            // Also save in a general orders collection for admin purposes (optional)
+            const allOrdersRef = ref(db, `allOrders/${orderId}`);
+            await set(allOrdersRef, {
+                ...orderData,
+                userId: currentUser.uid
+            });
+
+            console.log('Order saved successfully under user:', currentUser.uid);
+        } catch (error) {
+            console.error('Error saving order:', error);
+            setOrderSaved(false); // Reset on error so it can be retried
+        }
+    };
 
     const startConfetti = () => {
         const container = document.getElementById('confettiContainer');
@@ -113,21 +168,29 @@ const OrderSuccess = () => {
                 reviewText: review.text.trim(),
                 submittedAt: new Date().toISOString(),
                 deliveryTime: deliveryTime,
-                verified: currentUser ? true : false // Mark as verified if user is logged in
+                verified: currentUser ? true : false
             };
 
-            // Save to Firebase Realtime Database
+            // Save review to general reviews collection
             const reviewsRef = ref(db, 'reviews');
             const newReviewRef = push(reviewsRef);
             await set(newReviewRef, reviewData);
 
-            // Also save under user's reviews if logged in
+            // Also save review under user's profile if logged in
             if (currentUser) {
-                const userReviewsRef = ref(db, `userReviews/${currentUser.uid}`);
-                const userReviewRef = push(userReviewsRef);
+                const userReviewRef = ref(db, `users/${currentUser.uid}/reviews/${newReviewRef.key}`);
                 await set(userReviewRef, {
                     ...reviewData,
                     reviewId: newReviewRef.key
+                });
+
+                // Update the order with review info
+                const orderReviewRef = ref(db, `users/${currentUser.uid}/orders/${orderId}/review`);
+                await set(orderReviewRef, {
+                    rating: userRating,
+                    reviewText: review.text.trim(),
+                    reviewId: newReviewRef.key,
+                    reviewedAt: new Date().toISOString()
                 });
             }
 
@@ -242,6 +305,24 @@ const OrderSuccess = () => {
                         textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)'
                     }}>Order Placed Successfully!</h1>
                     <p style={{ color: '#ccc', fontSize: '1.1rem' }}>Thank you for shopping with GroceryGo</p>
+                    
+                    {currentUser && orderSaved && (
+                        <div style={{
+                            background: '#333',
+                            border: '1px solid #444',
+                            borderRadius: '8px',
+                            padding: '0.75rem',
+                            marginTop: '1rem',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                        }}>
+                            <span style={{ color: '#4CAF50', fontSize: '1.2rem' }}>✓</span>
+                            <span style={{ color: '#ccc', fontSize: '0.9rem' }}>
+                                Order saved to your account: {currentUser.email}
+                            </span>
+                        </div>
+                    )}
                 </div>
 
                 <div style={{
