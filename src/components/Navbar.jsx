@@ -1,8 +1,11 @@
-// src/components/Navbar.js
 import React, { useState, useEffect } from 'react';
+<<<<<<< HEAD
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ref, onValue, off } from 'firebase/database';
 import { db } from '../../firebaseConfig';
+=======
+import { Link, useLocation, useNavigate } from 'react-router-dom'; 
+>>>>>>> 2848f58a8c9dfdc274fa26d108cd5d96af24567d
 import { useAuth } from '../context/AuthContext';
 import AuthModals from './AuthModals';
 import './Navbar.css';
@@ -13,10 +16,16 @@ const Navbar = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('login');
   const [cartItemCount, setCartItemCount] = useState(0);
+<<<<<<< HEAD
   const [wishlistItemCount, setWishlistItemCount] = useState(0);
   const { currentUser, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+=======
+  const { currentUser, signOut } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate(); 
+>>>>>>> 2848f58a8c9dfdc274fa26d108cd5d96af24567d
 
   useEffect(() => {
     const handleScroll = () => {
@@ -116,7 +125,8 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await signOut();
+      navigate('/'); // Redirect to home page after logout
     } catch (error) {
       console.error('Failed to log out', error);
     }
@@ -153,6 +163,12 @@ const Navbar = () => {
               <li className="nav-item">
                 <Link to="/contact" className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`}>Contact</Link>
               </li>
+              {/* Add Profile link to nav menu when logged in */}
+              {currentUser && (
+                <li className="nav-item">
+                  <Link to="/profile" className={`nav-link ${location.pathname === '/profile' ? 'active' : ''}`}>My Profile</Link>
+                </li>
+              )}
             </ul>
             {currentUser && (
               <div className="mobile-welcome-text">
@@ -170,7 +186,11 @@ const Navbar = () => {
               <button 
                 className="action-btn profile-btn" 
                 onClick={handleProfileClick}
+<<<<<<< HEAD
                 title="Profile"
+=======
+                title="View Profile"
+>>>>>>> 2848f58a8c9dfdc274fa26d108cd5d96af24567d
               >
                 <svg className="profile-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -192,7 +212,11 @@ const Navbar = () => {
             )}
 
             {/* Cart button (always visible) */}
+<<<<<<< HEAD
             <Link to="/cart" className="action-btn cart-btn" title="Cart">
+=======
+            <Link to="/cart" className="action-btn cart-btn" title="View Cart">
+>>>>>>> 2848f58a8c9dfdc274fa26d108cd5d96af24567d
               <svg className="cart-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
                 <circle cx="9" cy="21" r="1"></circle>
                 <circle cx="20" cy="21" r="1"></circle>
@@ -205,12 +229,17 @@ const Navbar = () => {
             <div className="auth-buttons">
               {currentUser ? (
                 <>
+<<<<<<< HEAD
                   <span className="welcome-text" title={currentUser.email}>
                     Welcome, {currentUser.email.length > 15 
                       ? `${currentUser.email.substring(0, 12)}...` 
                       : currentUser.email}
                   </span>
                   <button className="login-btn" onClick={handleLogout}>Logout</button>
+=======
+                  <span className="welcome-text">Welcome, {currentUser.displayName || currentUser.email.split('@')[0]}</span>
+                  <button className="login-btn logout-btn" onClick={handleLogout}>Logout</button>
+>>>>>>> 2848f58a8c9dfdc274fa26d108cd5d96af24567d
                 </>
               ) : (
                 <>

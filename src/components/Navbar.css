@@ -90,6 +90,10 @@
   width: 100%;
 }
 
+.nav-link.active:after {
+  width: 100%;
+}
+
 .nav-actions {
   display: flex;
   align-items: center;
@@ -149,6 +153,31 @@
   color: #2ecc71;
 }
 
+/* Profile button styling */
+.profile-btn {
+  background-color: #f8f9fa;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.profile-btn:hover {
+  background-color: #e9ecef;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  color: #2ecc71;
+}
+
+.profile-icon {
+  width: 20px;
+  height: 20px;
+}
+
 .cart-count {
   position: absolute;
   top: -8px;
@@ -168,6 +197,14 @@
 .auth-buttons {
   display: flex;
   margin-left: 20px;
+  align-items: center;
+}
+
+.welcome-text {
+  margin-right: 15px;
+  font-size: 0.9rem;
+  color: #555;
+  font-weight: 500;
 }
 
 .login-btn, .signup-btn {
@@ -206,6 +243,20 @@
   box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
 }
 
+/* Logout button styling */
+.logout-btn {
+  background: linear-gradient(to right, #ffffff, #fff5f5);
+  border: 1px solid #ffcccc;
+  color: #dc3545;
+}
+
+.logout-btn:hover {
+  background: linear-gradient(to right, #ffefef, #ffe6e6);
+  color: #c82333;
+  border-color: #ff9999;
+  box-shadow: 0 4px 10px rgba(220, 53, 69, 0.2);
+}
+
 .hamburger {
   display: none;
   cursor: pointer;
@@ -223,6 +274,50 @@
 /* Hide mobile-auth by default */
 .mobile-auth {
   display: none;
+}
+
+/* Mobile profile button */
+.mobile-profile {
+  display: none;
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px 20px;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.3s ease;
+  background: linear-gradient(to right, #f0f8ff, #e6f7ff);
+  border: 1px solid #b3e0ff;
+  color: #0088cc;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-profile svg {
+  margin-right: 10px;
+}
+
+.mobile-profile:hover {
+  background: linear-gradient(to right, #e6f7ff, #ccefff);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 136, 204, 0.2);
+}
+
+.mobile-logout-btn {
+  background: linear-gradient(to right, #ffffff, #fff5f5);
+  border: 1px solid #ffcccc;
+  color: #dc3545;
+}
+
+.mobile-logout-btn:hover {
+  background: linear-gradient(to right, #ffefef, #ffe6e6);
+  color: #c82333;
+  border-color: #ff9999;
+  box-shadow: 0 4px 10px rgba(220, 53, 69, 0.2);
 }
 
 @media (max-width: 1100px) {
@@ -244,6 +339,40 @@
   
   .mobile-login-btn, .mobile-signup-btn {
     margin: 0 5px;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s ease;
+  }
+  
+  .mobile-login-btn {
+    background: linear-gradient(to right, #ffffff, #f8f8f8);
+    border: 1px solid #e0e0e0;
+    color: #333;
+  }
+  
+  .mobile-signup-btn {
+    background: linear-gradient(to right, #2ecc71, #27ae60);
+    border: none;
+    color: white;
+  }
+  
+  /* Mobile welcome text and profile button */
+  .mobile-welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-top: 20px;
+  }
+  
+  .mobile-welcome-text {
+    margin-bottom: 15px;
+    font-size: 1rem;
+    color: #555;
   }
 }
 
@@ -305,9 +434,26 @@
     display: none;
   }
   
+  /* Hide desktop profile button on mobile */
+  .profile-btn {
+    display: none;
+  }
+  
+  /* Show mobile profile in menu */
+  .mobile-profile {
+    display: flex;
+  }
+  
   /* Add some space for mobile auth buttons */
   .mobile-auth {
     margin-top: 30px;
+  }
+  
+  /* Style for welcome message in mobile view */
+  .mobile-welcome {
+    padding: 15px 0;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 15px;
   }
 }
 
@@ -321,10 +467,11 @@
   }
   
   /* Make mobile auth buttons responsive */
-  .mobile-login-btn, .mobile-signup-btn {
+  .mobile-login-btn, .mobile-signup-btn, .mobile-profile, .mobile-logout-btn {
     padding: 8px 16px;
     font-size: 0.9rem;
   }
+<<<<<<< HEAD
 }
 
 
@@ -398,3 +545,12 @@
     color: #555;
   }
 }
+=======
+  
+  .welcome-text, .mobile-welcome-text {
+    font-size: 0.85rem;
+  }
+}
+
+
+>>>>>>> 2848f58a8c9dfdc274fa26d108cd5d96af24567d
